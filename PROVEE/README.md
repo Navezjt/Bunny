@@ -1,0 +1,3 @@
+- https://github.com/cubiq/ComfyUI_InstantID
+- https://github.com/Navezjt/ComfyUI-InstantID
+- https://huggingface.co/BAAI/bunny-phi-2-siglip-lora
