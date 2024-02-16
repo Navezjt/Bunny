@@ -6,7 +6,7 @@
 
 📖 Technical report (coming soon) | 🤗 [Models](#model-zoo) | 🐰 [Demo](http://bunny.dataoptim.org)
 
-Bunny is a family of lightweight but powerful multimodal models. It offers multiple plug-and-play vision encoders, like EVA-CLIP, SigLIP and language backbones, including Phi-1.5, StableLM-2 and Phi-2. To compensate for the decrease in model size, we construct more informative training data by curated selection from a broader data source. Remarkably, our Bunny-3B model built upon SigLIP and Phi-2 outperforms the state-of-the-art MLLMs, not only in comparison with models of similar size but also against larger MLLM frameworks (7B), and even achieves performance on par with 13B models.
+Bunny is a family of lightweight but powerful multimodal models. It offers multiple plug-and-play vision encoders, like EVA-CLIP, SigLIP and language backbones, including Phi-1.5, StableLM-2 and Phi-2. To compensate for the decrease in model size, we construct more informative training data by curated selection from a broader data source. Remarkably, our Bunny-3B model built upon SigLIP and Phi-2 outperforms the state-of-the-art MLLMs, not only in comparison with models of similar size but also against larger MLLMs (7B), and even achieves performance on par with 13B models.
 
 ![comparison](comparison.png)
 
@@ -14,31 +14,31 @@ Bunny is a family of lightweight but powerful multimodal models. It offers multi
 
 * ⏳ Bunny training data.
 * ⏳ Bunny technical report.
-* 2024.2.7 🔥  **Bunny is out!** Bunny-3B built upon SigLIP and Phi-2 outperforms the state-of-the-art MLLMs, not only in comparison with models of similar size but also against larger MLLM frameworks (7B), and even achieves performance on par with LLaVA-13B!
+* 2024.2.7 🔥  **Bunny is released!** Bunny-3B built upon SigLIP and Phi-2 outperforms the state-of-the-art MLLMs, not only in comparison with models of similar size but also against larger MLLMs (7B), and even achieves performance on par with LLaVA-13B!
 
 ## Model Zoo
 
 * Evaluation
   
-| Checkpoint                                                                                   | MME$`^\text{P}`$ | MME$`^\text{C}`$ | MMB$`^\text{T}`$  | MMB$`^\text{D}`$  | SEED | MMMU | VQA$`^\text{v2}`$ | GQA  | SQA$`^\text{I}`$ |
-| -------------------------------------------------------------------------------------------- | :--------------: | :--------------: | :---------------: | :---------------: | :--: | :--: | :---------------: | :--: | :--------------: |
-| [bunny-phi-1.5-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-eva-lora)             | 1209.5           | 232.1            | 59.0              | 56.7              | 55.0 | 28.9 | 76.2              | 59.8 | 57.0             |
-| [bunny-stablelm-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-eva-lora)       | 1301.0           | 235.0            | 58.4              | 56.4              | 55.3 | 29.4 | 74.6              | 56.7 | 60.0             |
-| [bunny-phi-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-2-eva-lora)                 | 1329.0           | 257.5            | 66.4              | 66.6              | 60.7 | 32.2 | 77.8              | 61.0 | 68.1             |
-| [bunny-phi-1.5-siglip-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-siglip-lora)       | 1237.0           | 231.1            | 61.3              | 58.1              | 56.4 | 28.9 | 77.6              | 60.4 | 61.8             |
-| [bunny-stablelm-2-siglip-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-siglip-lora) | 1366.8           | 236.1            | 65.1              | 62.8              | 58.8 | 29.8 | 78.9              | 60.9 | 61.1             |
-| **[bunny-phi-2-siglip-lora](https://huggingface.co/BAAI/bunny-phi-2-siglip-lora)**           | 1459.1           | 285.0            | 69.5              | 68.5              | 62.4 | 32.9 | 79.5              | 61.8 | 69.1             |
+| Checkpoint                                                   | MME$`^\text{P}`$ | MME$`^\text{C}`$ | MMB$`^\text{T}`$ | MMB$`^\text{D}`$ | SEED | MMMU$`^\text{V}`$ | MMMU$`^\text{T}`$ | VQA$`^\text{v2}`$ | GQA  | SQA$`^\text{I}`$ | POPE |
+| ------------------------------------------------------------ | :--------------: | :--------------: | :--------------: | :--------------: | :--: | :---------------: | :---------------: | :---------------: | :--: | :----------------: | :----: |
+| [bunny-phi-1.5-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-eva-lora) |      1213.7      |      278.9      |       60.9       |       56.8       | 56.4 | 30.0 |       28.4       |       76.5       | 60.4 | 58.2           | 86.1 |
+| [bunny-stablelm-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-eva-lora) |      1301.0      |      235.0       |       58.4       |       56.4       | 55.3 | 29.8 |       29.4        |       74.6        | 56.7 | 60.0             | 84.8 |
+| [bunny-phi-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-2-eva-lora) |      1421.0      |      285.4      |       68.6       |       67.4       | 62.2 | 35.9 |       32.6       |       78.9       | 62.3 | 69.1           | 87.1 |
+| [bunny-phi-1.5-siglip-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-siglip-lora) |      1230.0      |      237.5      |       61.2       |       59.7       | 57.7 | 30.0 |       29.1       |       78.0       | 61.1 | 61.3            | 85.8 |
+| [bunny-stablelm-2-siglip-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-siglip-lora) |      1366.8      |      236.1       |       65.1       |       62.8       | 58.8 | 29.9 |       29.8        |       78.9        | 60.9 | 61.1             | 85.9 |
+| **[bunny-phi-2-siglip-lora](https://huggingface.co/BAAI/bunny-phi-2-siglip-lora)** |      1488.8      |      289.3      |       69.2       |       68.6       | 62.5 | 38.2 |       33.0       |       79.8       | 62.5 | 70.9        | 86.8 |
 
 * Training details
   
 | Checkpoint                                                   | Vision Encoder                                               | LLM                                                          | Pretrain lr | Pretrain weights                                             |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | :---------: | ------------------------------------------------------------ |
-| [bunny-phi-1.5-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-eva-lora) | [EVA02_CLIP_L_336_psz14_s6B](https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt) | [susnato/phi-1_5_dev](https://huggingface.co/susnato/phi-1_5_dev) |    1e-3     | [bunny-pretrain-phi-1.5-eva](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-1.5-eva) |
+| [bunny-phi-1.5-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-eva-lora) | [EVA02_CLIP_L_336_psz14_s6B](https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt) | [microsoft/phi-1_5](https://huggingface.co/microsoft/phi-1_5) |    1e-3     | [bunny-pretrain-phi-1.5-eva](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-1.5-eva) |
 | [bunny-stablelm-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-eva-lora) | [EVA02_CLIP_L_336_psz14_s6B](https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt) | [stabilityai/stablelm-2-1_6b](https://huggingface.co/stabilityai/stablelm-2-1_6b) |    1e-3     | [bunny-pretrain-stablelm-2-eva](https://huggingface.co/BoyaWu10/bunny-pretrain-stablelm-2-eva) |
-| [bunny-phi-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-2-eva-lora) | [EVA02_CLIP_L_336_psz14_s6B](https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt) | [Isaachhe/phi-2_dev](https://huggingface.co/Isaachhe/phi-2_dev) |    5e-5     | [bunny-pretrain-phi-2-eva](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-2-eva) |
-| [bunny-phi-1.5-siglip-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-siglip-lora) | [siglip-so400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384) | [susnato/phi-1_5_dev](https://huggingface.co/susnato/phi-1_5_dev) |    5e-4     | [bunny-pretrain-phi-1.5-siglip](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-1.5-siglip) |
+| [bunny-phi-2-eva-lora](https://huggingface.co/BoyaWu10/bunny-phi-2-eva-lora) | [EVA02_CLIP_L_336_psz14_s6B](https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt) | [microsoft/phi-2](https://huggingface.co/microsoft/phi-2)    |    5e-5     | [bunny-pretrain-phi-2-eva](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-2-eva) |
+| [bunny-phi-1.5-siglip-lora](https://huggingface.co/BoyaWu10/bunny-phi-1.5-siglip-lora) | [siglip-so400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384) | [microsoft/phi-1_5](https://huggingface.co/microsoft/phi-1_5) |    5e-4     | [bunny-pretrain-phi-1.5-siglip](https://huggingface.co/BoyaWu10/bunny-pretrain-phi-1.5-siglip) |
 | [bunny-stablelm-2-siglip-lora](https://huggingface.co/BoyaWu10/bunny-stablelm-2-siglip-lora) | [siglip-so400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384) | [stabilityai/stablelm-2-1_6b](https://huggingface.co/stabilityai/stablelm-2-1_6b) |    5e-4     | [bunny-pretrain-stablelm-2-siglip](https://huggingface.co/BoyaWu10/bunny-pretrain-stablelm-2-siglip) |
-| **[bunny-phi-2-siglip-lora](https://huggingface.co/BAAI/bunny-phi-2-siglip-lora)** | [siglip-so400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384) | [Isaachhe/phi-2_dev](https://huggingface.co/Isaachhe/phi-2_dev) |    5e-4     | [bunny-pretrain-phi-2-siglip](https://huggingface.co/BAAI/bunny-pretrain-phi-2-siglip) |
+| **[bunny-phi-2-siglip-lora](https://huggingface.co/BAAI/bunny-phi-2-siglip-lora)** | [siglip-so400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384) | [microsoft/phi-2](https://huggingface.co/microsoft/phi-2)    |    5e-4     | [bunny-pretrain-phi-2-siglip](https://huggingface.co/BAAI/bunny-pretrain-phi-2-siglip) |
 
 ## Install
 
@@ -100,7 +100,7 @@ Bunny is trained on 8 A100 GPUs. To train on fewer GPUs, you can reduce the `per
 
 Currently, we support several vision encoders and LLMs.
 
-For vision encoders, we supprt CLIP, EVA-CLIP and SigLIP.
+For vision encoders, we support CLIP, EVA-CLIP and SigLIP.
 
 | Vision Encoders            | Download Link                                                |
 | -------------------------- | ------------------------------------------------------------ |
@@ -112,9 +112,9 @@ For LLMs, we support phi-1.5, stablelm-2 and phi-2.
 
 | MODEL_TYPE | LLM             | Download Link                                                |
 | ---------- | --------------- | ------------------------------------------------------------ |
-| phi-1.5    | phi-1_5_dev     | [susnato/phi-1_5_dev](https://huggingface.co/susnato/phi-1_5_dev) |
+| phi-1.5    | phi-1_5     | [microsoft/phi-1_5](https://huggingface.co/microsoft/phi-1_5) |
 | stablelm-2 | stablelm-2-1_6b | [stabilityai/stablelm-2-1_6b](https://huggingface.co/stabilityai/stablelm-2-1_6b) |
-| phi-2      | phi-2_dev           | [Isaachhe/phi-2_dev](https://huggingface.co/Isaachhe/phi-2_dev) |
+| phi-2      | phi-2           | [microsoft/phi-2](https://huggingface.co/microsoft/phi-2) |
 
 Note that there are many variants of above models.
 We build and test our code based on the exact versions mentioned above.
@@ -191,45 +191,45 @@ More models will be supported in the future!
 
   Now, you can open the web interface with **the URL printed on the screen**. You may notice that there is no model in the model list. Do not worry, as we have not launched any model worker yet. It will be automatically updated when you launch a model worker.
 
-  * Launching Model Workers
+* Launching Model Workers
 
-    Model workers handle the processing of model inferences. Configure each worker with the appropriate model and start it.
+  Model workers handle the processing of model inferences. Configure each worker with the appropriate model and start it.
 
-    * For full-parameter tuning models
-  
-        ```shell
-        python -m bunny.serve.model_worker \
-        	--host 0.0.0.0 \
-        	--controller http://localhost:10000 \
-        	--port 40000 \
-        	--worker http://localhost:40000 \
-        	--model-path /path/to/your/model \
-        	--model-type phi-2 (or stablelm-2 or phi-1.5)
-        ```
+  * For full-parameter tuning models
 
-    * For LoRA tuning models
+      ```shell
+      python -m bunny.serve.model_worker \
+        --host 0.0.0.0 \
+        --controller http://localhost:10000 \
+        --port 40000 \
+        --worker http://localhost:40000 \
+        --model-path /path/to/bunny/model \
+        --model-type phi-2 (or stablelm-2 or phi-1.5)
+      ```
 
-        You can use `script/merge_lora_weights.py` to merge the LoRA weights and base LLM, and use it as above.
-        
-        ```Shell
-        python script/merge_lora_weights.py \
-        	--model-path /path/to/lora_weights \
-        	--model-base /path/to/base_model \
-        	--model-type phi-2 (or stablelm-2 or phi-1.5) \
-        	--save-model-path /path/to/merged_model
-        ```
-        Or you can use it without merging as below.
-        
-        ```shell
-        python -m bunny.serve.model_worker \
-        	--host 0.0.0.0 \
-        	--controller http://localhost:10000 \
-        	--port 40000 \
-        	--worker http://localhost:40000 \
-        	--model-path /path/to/your/model \
-        	--model-base /path/to/base_model \
-        	--model-type phi-2 (or stablelm-2 or phi-1.5)
-        ```
+  * For LoRA tuning models
+
+      You can use `script/merge_lora_weights.py` to merge the LoRA weights and base LLM, and use it as above.
+      
+      ```Shell
+      python script/merge_lora_weights.py \
+        --model-path /path/to/bunny_lora_weights \
+        --model-base /path/to/base_llm_model \
+        --model-type phi-2 (or stablelm-2 or phi-1.5) \
+        --save-model-path /path/to/merged_model
+      ```
+      Or you can use it without merging as below.
+      
+      ```shell
+      python -m bunny.serve.model_worker \
+        --host 0.0.0.0 \
+        --controller http://localhost:10000 \
+        --port 40000 \
+        --worker http://localhost:40000 \
+        --model-path /path/to/bunny_lora_weights \
+        --model-base /path/to/base_llm_model \
+        --model-type phi-2 (or stablelm-2 or phi-1.5)
+      ```
 
 
 ### CLI Inference (Without Gradio Interface)
@@ -240,7 +240,7 @@ For CLI-based inference without using the Gradio interface, use the following co
 
   ```shell
   python -m bunny.serve.cli \
-  	--model-path /path/to/your/model \
+  	--model-path /path/to/bunny/model \
   	--model-type phi-2 (or stablelm-2 or phi-1.5) \
   	--image-file /path/to/the/test/image
   ```
@@ -251,8 +251,8 @@ For CLI-based inference without using the Gradio interface, use the following co
 
   ```Shell
   python script/merge_lora_weights.py \
-  	--model-path /path/to/lora_weights \
-  	--model-base /path/to/base_model \
+  	--model-path /path/to/bunny_lora_weights \
+  	--model-base /path/to/base_llm_model \
   	--model-type phi-2 (or stablelm-2 or phi-1.5) \
   	--save-model-path /path/to/merged_model
   ```
@@ -261,8 +261,8 @@ For CLI-based inference without using the Gradio interface, use the following co
 
   ```shell
   python -m bunny.serve.cli \
-  	--model-path /path/to/your/model \
-  	--model-base /path/to/base_model \
+  	--model-path /path/to/bunny_lora_weights \
+  	--model-base /path/to/base_llm_model \
   	--model-type phi-2 (or stablelm-2 or phi-1.5) \
   	--image-file /path/to/the/test/image
   ```
@@ -272,6 +272,10 @@ For CLI-based inference without using the Gradio interface, use the following co
 For full-parameter tuning models, see [evaluation_full.md](script/eval/full/evaluation_full.md).
 
 For LoRA tuning models, see [evaluation_lora.md](script/eval/lora/evaluation_lora.md).
+
+## License
+This project utilizes certain datasets and checkpoints that are subject to their respective original licenses. Users must comply with all terms and conditions of these original licenses.
+The content of this project itself is licensed under the [Apache license 2.0](./LICENSE).
 
 ## Acknowledgement
 
