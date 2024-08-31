@@ -30,6 +30,8 @@ class ModelArguments:
     freeze_backbone: bool = field(default=False)
     tune_mm_mlp_adapter: bool = field(default=False)
     vision_tower: Optional[str] = field(default=None)
+    unfreeze_vision_tower: bool = field(default=False)
+    use_s2: bool = field(default=False)
     pretrain_mm_mlp_adapter: Optional[str] = field(default=None)
     mm_projector_type: Optional[str] = field(default='mlp2x_gelu')
 
@@ -207,7 +209,7 @@ def train():
         ))
 
     assert model_args.vision_tower is not None
-    if model_args.model_type == 'phi-1.5' or model_args.model_type == 'phi-2':
+    if model_args.model_type in {'phi-1.5', 'phi-2', 'phi-3', 'qwen1.5-1.8b', 'minicpm', 'llama3-8b'}:
         tokenizer = transformers.AutoTokenizer.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=training_args.cache_dir,
@@ -228,6 +230,10 @@ def train():
     if tokenizer.unk_token is not None and tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.unk_token
 
+    if model_args.model_type == 'llama3-8b':
+        tokenizer.eos_token_id = 128001
+        tokenizer.pad_token = tokenizer.eos_token
+
     if model_args.model_type == 'phi-1.5' or model_args.model_type == 'phi-2':
         model = BunnyPhiForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -236,8 +242,32 @@ def train():
             eos_token_id=tokenizer.eos_token_id,
             **bnb_model_from_pretrained_args
         )
+    elif model_args.model_type == 'phi-3':
+        model = BunnyPhi3ForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            **bnb_model_from_pretrained_args
+        )
     elif model_args.model_type == 'stablelm-2':
         model = BunnyStableLMForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            **bnb_model_from_pretrained_args
+        )
+    elif model_args.model_type == 'qwen1.5-1.8b':
+        model = BunnyQwen2ForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            **bnb_model_from_pretrained_args
+        )
+    elif model_args.model_type == 'minicpm':
+        model = BunnyMiniCPMForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            **bnb_model_from_pretrained_args
+        )
+    elif model_args.model_type == 'llama3-8b':
+        model = BunnyLlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=training_args.cache_dir,
             bos_token_id=tokenizer.bos_token_id,
@@ -316,6 +346,13 @@ def train():
         model.get_model().mm_projector.to(dtype=compute_dtype, device=training_args.device)
 
     model.config.mm_projector_lr = training_args.mm_projector_lr
+
+    model.config.use_s2 = model_args.use_s2
+
+    model.config.unfreeze_vision_tower = training_args.unfreeze_vision_tower = model_args.unfreeze_vision_tower
+    if training_args.unfreeze_vision_tower:
+        for p in model.get_model().vision_tower.parameters():
+            p.requires_grad = True
 
     if training_args.bits in [4, 8]:
         from peft.tuners.lora import LoraLayer

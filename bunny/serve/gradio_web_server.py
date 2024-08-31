@@ -24,7 +24,9 @@ enable_btn = gr.update(interactive=True)
 disable_btn = gr.update(interactive=False)
 
 priority = {
-    "Bunny": "aaaaaaa",
+    "Bunny-v1.1-Llama-3-8B-V": "a",
+    "Bunny-v1.1-4B": "b",
+    "Bunny-v1.0-3B": "c",
 }
 
 
@@ -116,13 +118,13 @@ def regenerate(state, image_process_mode, request: gr.Request):
     if type(prev_human_msg[1]) in (tuple, list):
         prev_human_msg[1] = (*prev_human_msg[1][:2], image_process_mode)
     state.skip_next = False
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 3
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
 
 
 def clear_history(request: gr.Request):
     logger.info(f"clear_history. ip: {request.client.host}")
     state = default_conversation.copy()
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 3
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
 
 
 def save_conversation(conversation):
@@ -147,8 +149,9 @@ def save_conversation(conversation):
 
     html_content += "</body></html>"
 
-    doc_path = "tmp/conversation.docx"
-    pypandoc.convert_text(html_content, 'docx', format='html', outputfile=doc_path)
+    doc_path = "./conversation.docx"
+    pypandoc.convert_text(html_content, 'docx', format='html', outputfile=doc_path,
+                          extra_args=["-M2GB", "+RTS", "-K64m", "-RTS"])
     return doc_path
 
 
@@ -156,13 +159,13 @@ def add_text(state, text, image, image_process_mode, request: gr.Request):
     logger.info(f"add_text. ip: {request.client.host}. len: {len(text)}")
     if len(text) <= 0 and image is None:
         state.skip_next = True
-        return (state, state.to_gradio_chatbot(), "", None) + (no_change_btn,) * 3
+        return (state, state.to_gradio_chatbot(), "", None) + (no_change_btn,) * 5
     if args.moderate:
         flagged = violates_moderation(text)
         if flagged:
             state.skip_next = True
             return (state, state.to_gradio_chatbot(), moderation_msg, None) + (
-                no_change_btn,) * 3
+                no_change_btn,) * 5
 
     text = text[:1536]  # Hard cut-off
     if image is not None:
@@ -177,22 +180,31 @@ def add_text(state, text, image, image_process_mode, request: gr.Request):
     state.append_message(state.roles[0], text)
     state.append_message(state.roles[1], None)
     state.skip_next = False
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 3
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
 
 
-def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request: gr.Request):
+def http_bot(state, model_selector, temperature, top_p, max_new_tokens, repetition_penalty, request: gr.Request):
     logger.info(f"http_bot. ip: {request.client.host}")
     start_tstamp = time.time()
     model_name = model_selector
 
     if state.skip_next:
         # This generate call is skipped due to invalid inputs
-        yield (state, state.to_gradio_chatbot()) + (no_change_btn,) * 3
+        yield (state, state.to_gradio_chatbot()) + (no_change_btn,) * 5
         return
 
     if len(state.messages) == state.offset + 2:
-        template_name = "bunny"
-        new_state = conv_templates[template_name].copy()
+        if 'llama3-8b' in model_selector.lower() or model_selector in {'Bunny-Llama-3-8B-V', 'Bunny-v1_1-Llama-3-8B-V',
+                                                                       'Bunny-v1.1-Llama-3-8B-V'}:
+            conv_mode = "llama"
+        elif 'phi-3' in model_selector.lower() or model_selector in {'Bunny-v1_0-4B', 'Bunny-v1.0-4B', 'Bunny-v1_1-4B',
+                                                                     'Bunny-v1.1-4B'}:
+            conv_mode = "phi3"
+        elif 'minicpm' in model_selector.lower() or model_selector in {'Bunny-v1_0-3B-zh', 'Bunny-v1.0-3B-zh'}:
+            conv_mode = "minicpm"
+        else:
+            conv_mode = "bunny"
+        new_state = conv_templates[conv_mode].copy()
         new_state.append_message(new_state.roles[0], state.messages[-2][1])
         new_state.append_message(new_state.roles[1], None)
         state = new_state
@@ -230,6 +242,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
         "temperature": float(temperature),
         "top_p": float(top_p),
         "max_new_tokens": min(int(max_new_tokens), 1536),
+        "repetition_penalty": float(repetition_penalty),
         "stop": state.sep if state.sep_style in [SeparatorStyle.PLAIN, ] else state.sep2,
         "images": f'List of {len(state.get_images())} images: {all_image_hash}',
     }
@@ -238,7 +251,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
     pload['images'] = state.get_images()
     print('=========> get_images')
     state.messages[-1][-1] = "▌"
-    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 3
+    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 5
     print('=========> state', state.messages[-1][-1])
 
     try:
@@ -254,7 +267,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
                 if data["error_code"] == 0:
                     output = data["text"][len(prompt):].strip()
                     state.messages[-1][-1] = output + "▌"
-                    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 3
+                    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 5
                 else:
                     output = data["text"] + f" (error_code: {data['error_code']})"
                     state.messages[-1][-1] = output
@@ -267,7 +280,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
         return
 
     state.messages[-1][-1] = state.messages[-1][-1][:-1]
-    yield (state, state.to_gradio_chatbot()) + (enable_btn,) * 3
+    yield (state, state.to_gradio_chatbot()) + (enable_btn,) * 5
 
     finish_tstamp = time.time()
     logger.info(f"{output}")
@@ -287,8 +300,10 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
 
 
 title_markdown = ("""
-# 🐰 Bunny
-[🏠[Code](https://github.com/BAAI-DCAI/Bunny)] | [🤗[Model](https://huggingface.co/BAAI/bunny-phi-2-siglip-lora)]
+# 🐰 Bunny: A family of lightweight multimodal models
+
+[📖 [Technical report](https://arxiv.org/abs/2402.11530)] | [🏠 [Code](https://github.com/BAAI-DCAI/Bunny)] | [🤗 [Bunny-v1.1-Llama-3-8B-V](https://huggingface.co/BAAI/Bunny-v1_1-Llama-3-8B-V)] | [🤗 [Bunny-v1.1-4B](https://huggingface.co/BAAI/Bunny-v1_1-4B)] | [🤗 [Bunny-v1.0-3B](https://huggingface.co/BAAI/Bunny-v1_0-3B)]
+
 """)
 
 tos_markdown = ("""
@@ -301,15 +316,20 @@ For an optimal experience, please use desktop computers for this demo, as mobile
 
 learn_more_markdown = ("""
 ### License
-The service is a research preview intended for non-commercial use only, Please contact us if you find any potential violation.
+This project utilizes certain datasets and checkpoints that are subject to their respective original licenses. Users must comply with all terms and conditions of these original licenses. The content of this project itself is licensed under the Apache license 2.0.
 """)
 
 block_css = """
-
+.centered {
+    text-align: center;
+}
 #buttons button {
     min-width: min(120px,100%);
 }
-
+#file-downloader {
+    min-width: min(120px,100%);
+    height: 50px;
+}
 """
 
 
@@ -319,7 +339,8 @@ def trigger_download(doc_path):
 
 def build_demo(embed_mode):
     textbox = gr.Textbox(show_label=False, placeholder="Enter text and press ENTER", container=False)
-    with gr.Blocks(title="Bunny", theme=gr.themes.Default(), css=block_css) as demo:
+    with gr.Blocks(title="Bunny", theme=gr.themes.Default(primary_hue="blue", secondary_hue="lime"),
+                   css=block_css) as demo:
         state = gr.State()
 
         if not embed_mode:
@@ -355,12 +376,14 @@ def build_demo(embed_mode):
                     top_p = gr.Slider(minimum=0.0, maximum=1.0, value=0.7, step=0.1, interactive=True, label="Top P", )
                     max_output_tokens = gr.Slider(minimum=0, maximum=1024, value=512, step=64, interactive=True,
                                                   label="Max output tokens", )
+                    repetition_penalty = gr.Slider(minimum=1.0, maximum=2.0, value=1.08, step=0.01, interactive=True,
+                                                   label="Repetition penalty", )
 
-                file_output = gr.components.File(label="Download Document", visible=True,
-                                                 elem_id="file")  # , visible=True,elem_id="file-output"
-
+                file_output = gr.components.File(label="Download Document", visible=True, elem_id="file-downloader")
             with gr.Column(scale=8):
-                chatbot = gr.Chatbot(elem_id="chatbot", label="Bunny Chatbot", height=550)
+                chatbot = gr.Chatbot(elem_id="chatbot", label="Bunny Chatbot",
+                                     avatar_images=[f"{cur_dir}/examples/user.png", f"{cur_dir}/examples/icon.jpg"],
+                                     height=550)
                 with gr.Row():
                     with gr.Column(scale=8):
                         textbox.render()
@@ -368,10 +391,12 @@ def build_demo(embed_mode):
                         submit_btn = gr.Button(value="Send", variant="primary")
 
                 with gr.Row(elem_id="buttons") as button_row:
+                    upvote_btn = gr.Button(value="👍  Upvote", interactive=False)
+                    downvote_btn = gr.Button(value="👎  Downvote", interactive=False)
                     # stop_btn = gr.Button(value="⏹️  Stop Generation", interactive=False)
                     regenerate_btn = gr.Button(value="🔁  Regenerate", interactive=False)
                     clear_btn = gr.Button(value="🚮  Clear", interactive=False)
-                    save_conversation_btn = gr.Button(value="🗃️  Save Conversation", interactive=False)
+                    save_conversation_btn = gr.Button(value="🗃️  Save", interactive=False)
 
         if not embed_mode:
             gr.Markdown(tos_markdown)
@@ -379,7 +404,18 @@ def build_demo(embed_mode):
         url_params = gr.JSON(visible=False)
 
         # Register listeners
-        btn_list = [regenerate_btn, clear_btn, save_conversation_btn]
+        btn_list = [upvote_btn, downvote_btn, regenerate_btn, clear_btn, save_conversation_btn]
+
+        upvote_btn.click(
+            upvote_last_response,
+            [state, model_selector],
+            [textbox, upvote_btn, downvote_btn]
+        )
+        downvote_btn.click(
+            downvote_last_response,
+            [state, model_selector],
+            [textbox, upvote_btn, downvote_btn]
+        )
 
         regenerate_btn.click(
             regenerate,
@@ -388,7 +424,7 @@ def build_demo(embed_mode):
             queue=False
         ).then(
             http_bot,
-            [state, model_selector, temperature, top_p, max_output_tokens],
+            [state, model_selector, temperature, top_p, max_output_tokens, repetition_penalty],
             [state, chatbot] + btn_list
         )
 
@@ -412,7 +448,7 @@ def build_demo(embed_mode):
             queue=False
         ).then(
             http_bot,
-            [state, model_selector, temperature, top_p, max_output_tokens],
+            [state, model_selector, temperature, top_p, max_output_tokens, repetition_penalty],
             [state, chatbot] + btn_list
         )
 
@@ -423,7 +459,7 @@ def build_demo(embed_mode):
             queue=False
         ).then(
             http_bot,
-            [state, model_selector, temperature, top_p, max_output_tokens],
+            [state, model_selector, temperature, top_p, max_output_tokens, repetition_penalty],
             [state, chatbot] + btn_list
         )
 

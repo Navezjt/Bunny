@@ -14,7 +14,9 @@ class BunnyMetaModel:
         super(BunnyMetaModel, self).__init__(config)
 
         if hasattr(config, "mm_vision_tower"):
-            self.vision_tower = build_vision_tower(config, delay_load=True)
+            self.vision_tower = build_vision_tower(config, delay_load=not getattr(config, 'continuous_training', False))
+            if getattr(config, 'continuous_training', False):
+                config.continuous_training = False
             self.mm_projector = build_vision_projector(config)
 
     def get_vision_tower(self):
@@ -112,10 +114,16 @@ class BunnyMetaForCausalLM(ABC):
         if labels is None:
             labels = torch.full_like(input_ids, IGNORE_INDEX)
 
+        input_ids_temp = input_ids # points to the actual input_ids tensor
+
         # remove the padding using attention_mask -- TODO: double check
         input_ids = [cur_input_ids[cur_attention_mask] for cur_input_ids, cur_attention_mask in
                      zip(input_ids, attention_mask)]
         labels = [cur_labels[cur_attention_mask] for cur_labels, cur_attention_mask in zip(labels, attention_mask)]
+
+        # -- TODO: better implementation?
+        # replace IMAGE_TOKEN_INDEX(-200) with 0 to be compatible with repetition penalty
+        input_ids_temp[input_ids_temp == IMAGE_TOKEN_INDEX] = 0
 
         new_input_embeds = []
         new_labels = []

@@ -95,18 +95,7 @@ class Conversation:
                         image = image.resize((336, 336))
                     else:
                         raise ValueError(f"Invalid image_process_mode: {image_process_mode}")
-                    max_hw, min_hw = max(image.size), min(image.size)
-                    aspect_ratio = max_hw / min_hw
-                    max_len, min_len = 800, 400
-                    shortest_edge = int(min(max_len / aspect_ratio, min_len, min_hw))
-                    longest_edge = int(shortest_edge * aspect_ratio)
-                    W, H = image.size
-                    if longest_edge != max(image.size):
-                        if H > W:
-                            H, W = longest_edge, shortest_edge
-                        else:
-                            H, W = shortest_edge, longest_edge
-                        image = image.resize((W, H))
+
                     if return_pil:
                         images.append(image)
                     else:
@@ -190,6 +179,42 @@ conv_bunny = Conversation(
     sep2="<|endoftext|>",
 )
 
+conv_phi3 = Conversation(
+    system="A chat between a curious user and an artificial intelligence assistant. "
+           "The assistant gives helpful, detailed, and polite answers to the user's questions.",
+    roles=("USER", "ASSISTANT"),
+    version="phi3",
+    messages=(),
+    offset=0,
+    sep_style=SeparatorStyle.TWO,
+    sep=" ",
+    sep2="<|endoftext|>",
+)
+
+conv_minicpm = Conversation(
+    system="A chat between a curious user and an artificial intelligence assistant. "
+           "The assistant gives helpful, detailed, and polite answers to the user's questions.",
+    roles=("USER", "ASSISTANT"),
+    version="minicpm",
+    messages=(),
+    offset=0,
+    sep_style=SeparatorStyle.TWO,
+    sep=" ",
+    sep2="</s>",
+)
+
+conv_llama = Conversation(
+    system="A chat between a curious user and an artificial intelligence assistant. "
+           "The assistant gives helpful, detailed, and polite answers to the user's questions.",
+    roles=("USER", "ASSISTANT"),
+    version="llama",
+    messages=(),
+    offset=0,
+    sep_style=SeparatorStyle.TWO,
+    sep=" ",
+    sep2="<|end_of_text|>",
+)
+
 conv_plain = Conversation(
     system="",
     roles=("", ""),
@@ -204,7 +229,10 @@ default_conversation = conv_bunny
 conv_templates = {
     "default": conv_bunny,
     "bunny": conv_bunny,
+    "phi3": conv_phi3,
     "plain": conv_plain,
+    'minicpm': conv_minicpm,
+    'llama': conv_llama
 }
 
 if __name__ == "__main__":

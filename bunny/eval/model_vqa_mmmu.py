@@ -11,7 +11,7 @@ from datasets import load_dataset, concatenate_datasets
 from argparse import ArgumentParser
 
 from bunny.model.builder import load_pretrained_model
-from bunny.util.mm_utils import get_model_name_from_path, tokenizer_image_token
+from bunny.util.mm_utils import get_model_name_from_path, tokenizer_image_token, process_images
 from bunny.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN
 from bunny.conversation import conv_templates
 
@@ -126,17 +126,17 @@ def call_bunny_engine_df(args, sample, model, tokenizer=None, processor=None):
         output_ids = model.generate(
             input_ids,
             images=image.unsqueeze(0).to(dtype=model.dtype, device='cuda', non_blocking=True),
-            do_sample=True,
-            temperature=1,
+            do_sample=False,
+            temperature=0,
             top_p=None,
-            num_beams=5,
+            # num_beams=5,
             max_new_tokens=128,
             use_cache=True)
 
         input_token_len = input_ids.shape[1]
-        n_diff_input_output = (input_ids != output_ids[:, :input_token_len]).sum().item()
-        if n_diff_input_output > 0:
-            print(f'[Warning] {n_diff_input_output} output_ids are not the same as the input_ids')
+        # n_diff_input_output = (input_ids != output_ids[:, :input_token_len]).sum().item()
+        # if n_diff_input_output > 0:
+        #     print(f'[Warning] {n_diff_input_output} output_ids are not the same as the input_ids')
         response = tokenizer.batch_decode(output_ids[:, input_token_len:], skip_special_tokens=True)[0]
     else:  # multiple images actually
         if sample['question_type'] == 'multiple-choice':
@@ -225,7 +225,11 @@ def run_model(args, samples, model, call_model_engine_fn=None, tokenizer=None, p
     out_samples = dict()
     with torch.no_grad():
         for sample in tqdm(samples):
+            if args.small_gpu_usage:
+                sample['image'] = sample['image'].cuda()
             response = call_model_engine_fn(args, sample, model, tokenizer, processor)
+            if args.small_gpu_usage:
+                sample['image'] = sample['image'].cpu()
 
             if sample['question_type'] == 'multiple-choice':
                 pred_ans = parse_multi_choice_response(response, sample['all_choices'], sample['index2ans'])
@@ -262,6 +266,7 @@ def main():
     parser.add_argument('--output-path', type=str, default=None)
     parser.add_argument('--split', type=str, default='validation')
     parser.add_argument('--seed', type=int, default=42)
+    parser.add_argument("--small-gpu-usage", action="store_true")
 
     args = parser.parse_args()
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
@@ -294,15 +299,20 @@ def main():
                                                                           args.model_type)
 
     samples = []
-    for sample in dataset:
+    print('Processing MMMU dataset...')
+    for sample in tqdm(dataset):
         sample = process_single_sample(sample)
 
         sample = construct_prompt(sample, args.config)
         if sample['image']:
-            sample['image'] = vis_processors.preprocess(sample['image'], return_tensors='pt')['pixel_values'][0].to(
-                device)
+            sample['image'] = process_images([sample['image'].convert('RGB')], vis_processors, model.config)[0]
+
+            if not args.small_gpu_usage:
+                sample['image'] = sample['image'].to(device)
+
         samples.append(sample)
 
+    print('Start to evaluate...')
     # run ex
     out_samples = run_model(args, samples, model, call_model_engine, tokenizer, processor)
 

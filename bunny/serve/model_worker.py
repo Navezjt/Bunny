@@ -54,7 +54,6 @@ class ModelWorker:
 
         self.device = device
         logger.info(f"Loading the model {self.model_name} on worker {worker_id} ...")
-        transformers.logging.set_verbosity_error()
         transformers.logging.disable_progress_bar()
         self.tokenizer, self.model, self.image_processor, self.context_len = load_pretrained_model(
             model_path, model_base, self.model_name, model_type, load_8bit, load_4bit, device=self.device)
@@ -113,7 +112,6 @@ class ModelWorker:
             "queue_length": self.get_queue_length(),
         }
 
-    @torch.inference_mode()
     def generate_stream(self, params):
         tokenizer, model, image_processor = self.tokenizer, self.model, self.image_processor
 
@@ -150,6 +148,7 @@ class ModelWorker:
         top_p = float(params.get("top_p", 1.0))
         max_context_length = getattr(model.config, 'max_position_embeddings', 2048)
         max_new_tokens = min(int(params.get("max_new_tokens", 256)), 1024)
+        repetition_penalty = float(params.get("repetition_penalty", 1.0))
         stop_str = params.get("stop", None)
         do_sample = True if temperature > 0.001 else False
 
@@ -177,6 +176,7 @@ class ModelWorker:
             streamer=streamer,
             stopping_criteria=[stopping_criteria],
             use_cache=True,
+            repetition_penalty=repetition_penalty,
             **image_args
         ))
         thread.start()

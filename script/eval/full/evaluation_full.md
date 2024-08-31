@@ -1,12 +1,14 @@
 # Evaluation for full-parameter tuning models
 
+**Note that change `conv-mode` to `minicpm/phi3/llama` for `MODEL_TYPE = minicpm/phi-3/llama3-8b`.**
+
 ## MME
 
 1. Refer to [MME GitHub](https://github.com/BradyFU/Awesome-Multimodal-Large-Language-Models/tree/Evaluation) to download the benchmark dataset and put `MME_Benchmark_release_version` under `eval/mme`.
 2. Update `MODEL_TYPE` and `TARGET_DIR` accordingly.
 
 ```shell
-sh script/eval/full/mme.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/mme.sh
 ```
 
 The responses and scores can be found in `eval/mme/answers_upload`.
@@ -15,10 +17,10 @@ The responses and scores can be found in `eval/mme/answers_upload`.
 
 1. Refer to [MMBench GitHub](https://github.com/open-compass/MMBench) to download the benchmark dataset. We support `MMBench-Dev`, `MMBench-Test`, `MMBench-Dev (cn)` and `MMBench-Test (cn)`. Please note that only the files downloaded by **legacy link** are supported.
    Put `MMBench_DEV_EN_legacy.tsv`, `MMBench_TEST_EN_legacy.tsv`, `MMBench_DEV_CN_legacy.tsv` or `MMBench_TEST_CN_legacy.tsv` under `eval/mmbench`.
-2. Update `SPLIT`, `MODEL_TYPE` and `TARGET_DIR` accordingly.
+2. Update `SPLIT`, `LANG (en/cn)`, `MODEL_TYPE` and `TARGET_DIR` accordingly.
 
 ```shell
-sh script/eval/full/mmbench.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/mmbench.sh
 ```
 
 The response file can be found in `eval/mmbench/answers_upload`. You can submit the Excel file to [submission link](https://mmbench.opencompass.org.cn/mmbench-submission) to obtain the evaluation scores.
@@ -44,10 +46,10 @@ The response file can be found in `eval/seed-bench/answers_upload` and the score
 ## MMMU
 
 1. Refer to [MMMU HuggingFace](https://huggingface.co/datasets/MMMU/MMMU) to download the benchmark dataset and put `MMMU` under `eval/mmmu`.
-2. Update `SPLIT`, `MODEL_TYPE` and `TARGET_DIR` accordingly.
+2. Update `SPLIT`, `MODEL_TYPE` and `TARGET_DIR` accordingly. You may add `--small-gpu-usage` to avoid `CUDA out of memory`.
 
 ```shell
-sh script/eval/full/mmmu.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/mmmu.sh
 ```
 
 The response file can be found in `eval/mmmu/answers_upload`.
@@ -60,6 +62,26 @@ python eval/mmmu/eval_mmmu.py \
 ```
 
 For test set, you can submit the `json` response file to [submission_link](https://eval.ai/web/challenges/challenge-page/2179/overview) to obtain the evaluation scores.
+
+## CMMMU
+
+1. Refer to [CMMMU HuggingFace](https://huggingface.co/datasets/m-a-p/CMMMU) to download the benchmark dataset and put `CMMMU` under `eval/cmmmu`.
+2. Update `SPLIT`, `MODEL_TYPE` and `TARGET_DIR` accordingly. You may add `--small-gpu-usage` to avoid `CUDA out of memory`.
+
+```shell
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/cmmmu.sh
+```
+
+The response file can be found in `eval/cmmmu/answers_upload`.
+
+For validation set, you can use `eval_script.py` to obtain the scores.
+
+```shell
+python eval/cmmmu/eval_script.py \
+	--output_path ./eval/cmmmu/answers_upload/$SPLIT/$TARGET_DIR.jsonl
+```
+
+For test set, you can submit the `jsonl` response file to [submission_link](https://eval.ai/web/challenges/challenge-page/2217/overview) to obtain the evaluation scores.
 
 ## VQAv2
 
@@ -75,7 +97,7 @@ For test set, you can submit the `json` response file to [submission_link](https
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash script/eval/full/vqav2.sh
 ```
 
-The response file can be found in `eval/vqav2/answers_upload`. You can submit the `json` response file to [submission link](https://eval.ai/web/challenges/challenge-page/830/submission) (Test-Dev Phase) to obtain the evaluation scores.
+The response file can be found in `eval/vqav2/answers_upload`. You can submit the `json` response file to [submission link](https://eval.ai/web/challenges/challenge-page/830) (Test-Dev Phase) to obtain the evaluation scores.
 
 ## GQA
 
@@ -97,7 +119,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash script/eval/full/gqa.sh
 2. Update `MODEL_TYPE` and `TARGET_DIR` accordingly.
 
 ```shell
-sh script/eval/full/scienceqa.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/scienceqa.sh
 ```
 
 The responses and the scores can be found in `eval/scienceqa/results`.
@@ -108,7 +130,7 @@ The responses and the scores can be found in `eval/scienceqa/results`.
 2. Update `MODEL_TYPE` and `TARGET_DIR` accordingly.
 
 ```Shell
-sh script/eval/full/pope.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/pope.sh
 ```
 
 We report the averaged F1-score of three categories (random, popular and adversarial).
@@ -119,8 +141,12 @@ We report the averaged F1-score of three categories (random, popular and adversa
 2. Update `MODEL_TYPE` and `TARGET_DIR` accordingly.
 
 ```shell
-sh script/eval/full/mmvet.sh
+CUDA_VISIBLE_DEVICES=0 sh script/eval/full/mmvet.sh
 ```
 
 The response file can be found in `eval/mm-vet/answers_upload`. You can submit the `json` response file to [submission link](https://huggingface.co/spaces/whyu/MM-Vet_Evaluator) to obtain the evaluation scores.
 
+## SpatialBench
+SpatialBench is proposed in [SpatialBot](https://github.com/BAAI-DCAI/SpatialBot). It tests models' performance on spatial understanding and reasoning.
+1. Download dataset in [HuggingFace](https://huggingface.co/datasets/RussRobin/SpatialBench).
+2. Please refer to [SpatialBot GitHub](https://github.com/BAAI-DCAI/SpatialBot/blob/main/script/eval/lora/evaluation_lora.md) for evaluation codes.
